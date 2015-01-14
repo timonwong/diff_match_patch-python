@@ -22,13 +22,13 @@ diff_match_patch_diff(PyObject *self, PyObject *args, PyObject *kwargs)
     char format_spec[64];
 
     static char *kwlist[] = {
-        strdup("left_document"),
-        strdup("right_document"),
-        strdup("timelimit"),
-        strdup("checklines"),
-        strdup("cleanup_semantic"),
-        strdup("counts_only"),
-        strdup("as_patch"),
+        const_cast<char *>("left_document"),
+        const_cast<char *>("right_document"),
+        const_cast<char *>("timelimit"),
+        const_cast<char *>("checklines"),
+        const_cast<char *>("cleanup_semantic"),
+        const_cast<char *>("counts_only"),
+        const_cast<char *>("as_patch"),
         NULL };
 
     sprintf(format_spec, "%c%c|fbbbb", FMTSPEC, FMTSPEC);
@@ -92,23 +92,15 @@ diff_match_patch_diff(PyObject *self, PyObject *args, PyObject *kwargs)
     return ret;
 }
 
-static PyObject *
-diff_match_patch_diff_unicode(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    return diff_match_patch_diff<const wchar_t, 'u', std::wstring, Py_UNICODE>(self, args, kwargs);
-}
+static PyCFunction _diff_unicode = (PyCFunction)(PyCFunctionWithKeywords)diff_match_patch_diff<const wchar_t, 'u', std::wstring, Py_UNICODE>;
 
 #if PY_MAJOR_VERSION == 2
-static PyObject *
-diff_match_patch_diff_str(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    return diff_match_patch_diff<const char, 's', std::string, char*>(self, args, kwargs);
-}
+static PyCFunction _diff_str = (PyCFunction)(PyCFunctionWithKeywords)diff_match_patch_diff<const char, 's', std::string, char*>;
 
 static PyMethodDef MyMethods[] = {
-    {"diff_unicode", (PyCFunction)diff_match_patch_diff_unicode, METH_VARARGS|METH_KEYWORDS,
+    {"diff_unicode", _diff_unicode, METH_VARARGS|METH_KEYWORDS,
     "Compute the difference between two Unicode strings. Returns a list of tuples (OP, LEN)."},
-    {"diff_str", (PyCFunction)diff_match_patch_diff_str, METH_VARARGS|METH_KEYWORDS,
+    {"diff_str", _diff_str, METH_VARARGS|METH_KEYWORDS,
     "Compute the difference between two (regular) strings. Returns a list of tuples (OP, LEN)."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
@@ -121,16 +113,12 @@ initdiff_match_patch(void)
 #endif
 
 #if PY_MAJOR_VERSION == 3
-static PyObject *
-diff_match_patch_diff_bytes(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    return diff_match_patch_diff<const char, 'y', std::string, char*>(self, args, kwargs);
-}
+static PyCFunction _diff_bytes = (PyCFunction)(PyCFunctionWithKeywords)diff_match_patch_diff<const char, 'y', std::string, char*>;
 
 static PyMethodDef MyMethods[] = {
-    {"diff", (PyCFunction)diff_match_patch_diff_unicode, METH_VARARGS|METH_KEYWORDS,
+    {"diff", _diff_unicode, METH_VARARGS|METH_KEYWORDS,
     "Compute the difference between two strings. Returns a list of tuples (OP, LEN)."},
-    {"diff_bytes", (PyCFunction)diff_match_patch_diff_bytes, METH_VARARGS|METH_KEYWORDS,
+    {"diff_bytes", _diff_bytes, METH_VARARGS|METH_KEYWORDS,
     "Compute the difference between two byte strings. Returns a list of tuples (OP, LEN)."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
